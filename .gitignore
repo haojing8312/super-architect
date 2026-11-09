@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 frontend/node_modules/
 frontend/dist/
+frontend/interior-editor/dist/
 build/
 dist/
 *.egg-info/
@@ -23,6 +24,7 @@ docs/*
 !docs/open-source-local-design-proposal.md
 !docs/parity-matrix.md
 !docs/optional-components.md
+!docs/local-delivery.md
 validation/
 frontend/public/cad-viewer/
 frontend/public/report-builder/

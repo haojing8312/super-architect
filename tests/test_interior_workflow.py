@@ -16,10 +16,10 @@ from architecture_workbench.security import register_security
 from architecture_workbench.store import Store
 
 PROJECT = Path(__file__).resolve().parents[1]
-EDITOR_ROOT = PROJECT / "resources" / "skills" / "固定编辑器"
+EDITOR_ROOT = PROJECT / "resources" / "skills" / "interior-3d-web" / "固定编辑器"
 pytestmark = pytest.mark.skipif(
     not EDITOR_ROOT.is_dir(),
-    reason="可选参考室内编辑器资源未包含在公开源码；核心启动不依赖它，复现需自备或替代资源",
+    reason="请先执行 npm run build:interior 构建本仓库公开室内编辑器",
 )
 
 

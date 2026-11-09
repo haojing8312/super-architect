@@ -110,11 +110,13 @@ class InteriorService:
     def styles(self):
         path = self.skill_root / "固定编辑器" / "风格统一配置.json"
         if not path.is_file():
-            raise ValueError("内置室内三维编辑器资源缺失")
+            raise ValueError("公开室内三维编辑器资源未构建：请在 frontend 目录执行 npm run build:interior")
         return json.loads(path.read_text(encoding="utf-8"))["styles"]
 
     def capabilities(self):
-        required = ["SKILL.md", "开始生成.md", "生成本次网页.cjs", "固定编辑器/固定编辑器代码.json", "固定编辑器/场景校验.cjs", "固定编辑器/交付阶段校验.cjs"]
+        required = ["SKILL.md", "开始生成.md", "引用规范.md", "生成本次网页.cjs",
+                    "固定编辑器/固定编辑器代码.json", "固定编辑器/风格统一配置.json",
+                    "固定编辑器/场景校验.cjs", "固定编辑器/交付阶段校验.cjs"]
         missing = [name for name in required if not (self.skill_root / name).is_file()]
         try:
             import pypdfium2  # noqa: F401
@@ -126,6 +128,8 @@ class InteriorService:
         except ValueError:
             node = False
         return {"engine": ENGINE, "ready": not missing and node, "missing": missing, "pdf": pdf, "node": node,
+                "resource": "resources/skills/interior-3d-web",
+                "build_hint": "公开室内编辑器资源由 frontend/interior-editor 源码构建：在 frontend 目录执行 npm run build:interior",
                 "recognition": "local-agent-or-manual-tracing", "limits": {"source_bytes": MAX_SOURCE, "source_pixels": 24_000_000},
                 "note": "底图识别与尺度估算需要核对；程序化家具不等同照片级模型或施工图"}
 

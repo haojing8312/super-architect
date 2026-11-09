@@ -159,7 +159,7 @@ def launch(data_dir=None, port=33821):
         if not thread.is_alive() or time.monotonic()>deadline:
             raise RuntimeError("本地工作台服务启动失败")
         time.sleep(.05)
-    window=webview.create_window("超级建筑师",url=url,js_api=bridge,width=1320,height=900,min_size=(1000,640),frameless=True,easy_drag=False,background_color="#141617",text_select=True)
+    window=webview.create_window("超级建筑师 · 本地版",url=url,js_api=bridge,width=1320,height=900,min_size=(1000,640),frameless=True,easy_drag=False,background_color="#141617",text_select=True)
     bridge._window=window
     from .window_bounds import install_work_area_guard
     window.events.shown += lambda: install_work_area_guard(window)
@@ -194,7 +194,8 @@ def launch(data_dir=None, port=33821):
     try:
         icons=[Path(__file__).parent/'frontend/brand/yuangou.ico',Path(__file__).resolve().parents[2]/'frontend/public/brand/yuangou.ico']
         native_icon=next((str(path) for path in icons if path.is_file()),None)
-        webview.start(gui="edgechromium",debug=False,icon=native_icon)
+        webview.start(gui="edgechromium",debug=False,icon=native_icon,
+                      private_mode=False,storage_path=str(directory / "webview2"))
     finally:
         if tray:
             tray.stop()

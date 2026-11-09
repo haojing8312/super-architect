@@ -1,0 +1,142 @@
+{
+  "format": "interior-styles/1.0",
+  "note": "原创公开风格目录。颜色与材质为程序化设计参数，不复制任何参考产品的固定编辑器资源。",
+  "styles": [
+    {
+      "id": "ref_warm",
+      "name": "暖调中古",
+      "tag": "胡桃木、焦糖织物、黄铜点缀",
+      "palette": ["#f1e7d6", "#c9a06a", "#8a5a3b", "#3d342c"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "wood", "pattern": "walnut", "color": "#a9774e", "baseColor": "#a9774e", "roughness": 0.58, "metalness": 0.0},
+        "wall": {"preset": "plaster", "pattern": "plaster", "color": "#efe3d1", "baseColor": "#efe3d1", "roughness": 0.92, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#f5ede1", "baseColor": "#f5ede1", "roughness": 0.95, "metalness": 0.0},
+        "featureWall": {"preset": "wood", "pattern": "oak", "color": "#8c6246", "baseColor": "#8c6246", "roughness": 0.62, "metalness": 0.0},
+        "door": {"preset": "wood", "pattern": "walnut", "color": "#8b5f40", "baseColor": "#8b5f40", "roughness": 0.55, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#b9c8c6", "baseColor": "#b9c8c6", "roughness": 0.12, "metalness": 0.15, "opacity": 0.34}
+      },
+      "furniture": {"sofa": "woven", "chair": "leather", "table": "walnut", "cabinet": "walnut", "bed": "oak", "lamp": "brass", "rug": "wool", "plant": "ceramic"},
+      "decor": {"frame": "#8a5a3b", "pot": "#9a5c3f", "leaf": "#4e6b45", "accent": "#c19a55"}
+    },
+    {
+      "id": "ref_bauhaus",
+      "name": "包豪斯混搭",
+      "tag": "钢管、黑白灰、原色块",
+      "palette": ["#e8e6e1", "#1f2324", "#b7472a", "#d7a72c"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "concrete", "pattern": "concrete", "color": "#b9b5ad", "baseColor": "#b9b5ad", "roughness": 0.7, "metalness": 0.02},
+        "wall": {"preset": "paint", "pattern": "plaster", "color": "#e7e3dc", "baseColor": "#e7e3dc", "roughness": 0.9, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#f1efeb", "baseColor": "#f1efeb", "roughness": 0.95, "metalness": 0.0},
+        "featureWall": {"preset": "paint", "pattern": "plaster", "color": "#b7472a", "baseColor": "#b7472a", "roughness": 0.86, "metalness": 0.0},
+        "door": {"preset": "paint", "pattern": "plaster", "color": "#2b3031", "baseColor": "#2b3031", "roughness": 0.6, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#aebcbe", "baseColor": "#aebcbe", "roughness": 0.1, "metalness": 0.2, "opacity": 0.32}
+      },
+      "furniture": {"sofa": "leather", "chair": "steel", "table": "steel", "cabinet": "paint", "bed": "paint", "lamp": "steel", "rug": "wool", "plant": "ceramic"},
+      "decor": {"frame": "#202426", "pot": "#b7472a", "leaf": "#3f5c3a", "accent": "#d7a72c"}
+    },
+    {
+      "id": "ref_italian",
+      "name": "意式雅奢",
+      "tag": "大理石、烟草色皮革、金属细节",
+      "palette": ["#e6dfd3", "#5d4436", "#a67c52", "#23211f"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "stone", "pattern": "marble", "color": "#d8d2c7", "baseColor": "#d8d2c7", "roughness": 0.28, "metalness": 0.0},
+        "wall": {"preset": "plaster", "pattern": "plaster", "color": "#e8dfd1", "baseColor": "#e8dfd1", "roughness": 0.9, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#f2ece2", "baseColor": "#f2ece2", "roughness": 0.94, "metalness": 0.0},
+        "featureWall": {"preset": "stone", "pattern": "marble", "color": "#cdc4b5", "baseColor": "#cdc4b5", "roughness": 0.3, "metalness": 0.0},
+        "door": {"preset": "wood", "pattern": "walnut", "color": "#4e362b", "baseColor": "#4e362b", "roughness": 0.5, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#c4cfcc", "baseColor": "#c4cfcc", "roughness": 0.08, "metalness": 0.2, "opacity": 0.3}
+      },
+      "furniture": {"sofa": "leather", "chair": "leather", "table": "marble", "cabinet": "walnut", "bed": "leather", "lamp": "brass", "rug": "silk", "plant": "ceramic"},
+      "decor": {"frame": "#a67c52", "pot": "#5d4436", "leaf": "#4c6347", "accent": "#c9a96a"}
+    },
+    {
+      "id": "minimal",
+      "name": "现代高级",
+      "tag": "微水泥、黑白、隐形收纳",
+      "palette": ["#e9e8e4", "#9d9e9c", "#4a4a48", "#1c1d1d"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "concrete", "pattern": "microcement", "color": "#c8c6c1", "baseColor": "#c8c6c1", "roughness": 0.62, "metalness": 0.0},
+        "wall": {"preset": "paint", "pattern": "plaster", "color": "#e9e7e2", "baseColor": "#e9e7e2", "roughness": 0.9, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#f2f1ee", "baseColor": "#f2f1ee", "roughness": 0.95, "metalness": 0.0},
+        "featureWall": {"preset": "concrete", "pattern": "microcement", "color": "#b7b3ac", "baseColor": "#b7b3ac", "roughness": 0.7, "metalness": 0.0},
+        "door": {"preset": "paint", "pattern": "plaster", "color": "#e3e1dc", "baseColor": "#e3e1dc", "roughness": 0.55, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#c2cccb", "baseColor": "#c2cccb", "roughness": 0.08, "metalness": 0.2, "opacity": 0.28}
+      },
+      "furniture": {"sofa": "woven", "chair": "paint", "table": "stone", "cabinet": "paint", "bed": "woven", "lamp": "steel", "rug": "wool", "plant": "ceramic"},
+      "decor": {"frame": "#4a4a48", "pot": "#8c8b87", "leaf": "#4f6548", "accent": "#b0a48c"}
+    },
+    {
+      "id": "scandi",
+      "name": "北欧自然",
+      "tag": "浅木、白墙、柔光织物",
+      "palette": ["#f4f0e7", "#d9c6a5", "#93a08d", "#414a45"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "wood", "pattern": "oak", "color": "#c9ae86", "baseColor": "#c9ae86", "roughness": 0.62, "metalness": 0.0},
+        "wall": {"preset": "plaster", "pattern": "plaster", "color": "#f2efe8", "baseColor": "#f2efe8", "roughness": 0.92, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#f8f6f1", "baseColor": "#f8f6f1", "roughness": 0.95, "metalness": 0.0},
+        "featureWall": {"preset": "wood", "pattern": "ash", "color": "#d8c3a0", "baseColor": "#d8c3a0", "roughness": 0.64, "metalness": 0.0},
+        "door": {"preset": "wood", "pattern": "ash", "color": "#d3bd98", "baseColor": "#d3bd98", "roughness": 0.6, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#bccdcd", "baseColor": "#bccdcd", "roughness": 0.1, "metalness": 0.18, "opacity": 0.3}
+      },
+      "furniture": {"sofa": "woven", "chair": "oak", "table": "oak", "cabinet": "ash", "bed": "oak", "lamp": "linen", "rug": "wool", "plant": "ceramic"},
+      "decor": {"frame": "#a58f72", "pot": "#b7a48a", "leaf": "#55704b", "accent": "#8fa08c"}
+    },
+    {
+      "id": "wabi",
+      "name": "原木侘寂",
+      "tag": "手作肌理、亚麻、低饱和",
+      "palette": ["#ded5c5", "#b49a78", "#7b735f", "#45423a"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "wood", "pattern": "ash", "color": "#b49a78", "baseColor": "#b49a78", "roughness": 0.7, "metalness": 0.0},
+        "wall": {"preset": "plaster", "pattern": "limewash", "color": "#ded5c5", "baseColor": "#ded5c5", "roughness": 0.96, "metalness": 0.0},
+        "ceiling": {"preset": "wood", "pattern": "ash", "color": "#cdbb9f", "baseColor": "#cdbb9f", "roughness": 0.92, "metalness": 0.0},
+        "featureWall": {"preset": "plaster", "pattern": "limewash", "color": "#c8b9a2", "baseColor": "#c8b9a2", "roughness": 0.96, "metalness": 0.0},
+        "door": {"preset": "wood", "pattern": "ash", "color": "#a98f6f", "baseColor": "#a98f6f", "roughness": 0.7, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#c8cfc8", "baseColor": "#c8cfc8", "roughness": 0.15, "metalness": 0.1, "opacity": 0.34}
+      },
+      "furniture": {"sofa": "linen", "chair": "rattan", "table": "ash", "cabinet": "ash", "bed": "ash", "lamp": "paper", "rug": "jute", "plant": "ceramic"},
+      "decor": {"frame": "#7b735f", "pot": "#8d7662", "leaf": "#5f6d4f", "accent": "#b49a78"}
+    },
+    {
+      "id": "oriental",
+      "name": "现代东方",
+      "tag": "深木、留白、石与竹",
+      "palette": ["#efe9de", "#8c6a4a", "#4d5a52", "#2a2723"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "wood", "pattern": "walnut", "color": "#8c6a4a", "baseColor": "#8c6a4a", "roughness": 0.55, "metalness": 0.0},
+        "wall": {"preset": "plaster", "pattern": "plaster", "color": "#efe9de", "baseColor": "#efe9de", "roughness": 0.93, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#f4efe6", "baseColor": "#f4efe6", "roughness": 0.95, "metalness": 0.0},
+        "featureWall": {"preset": "wood", "pattern": "walnut", "color": "#6f5139", "baseColor": "#6f5139", "roughness": 0.6, "metalness": 0.0},
+        "door": {"preset": "wood", "pattern": "walnut", "color": "#5c432f", "baseColor": "#5c432f", "roughness": 0.55, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#b9c6c1", "baseColor": "#b9c6c1", "roughness": 0.12, "metalness": 0.15, "opacity": 0.32}
+      },
+      "furniture": {"sofa": "linen", "chair": "walnut", "table": "walnut", "cabinet": "walnut", "bed": "walnut", "lamp": "paper", "rug": "silk", "plant": "ceramic"},
+      "decor": {"frame": "#4d5a52", "pot": "#6b5a49", "leaf": "#4e6247", "accent": "#8c6a4a"}
+    },
+    {
+      "id": "cream",
+      "name": "奶油中古",
+      "tag": "奶油白、圆润家具、浅木",
+      "palette": ["#f6efe3", "#e6d4b8", "#c7a988", "#6b5a4b"],
+      "referenceSources": [],
+      "surfaceDecorProfile": {
+        "floor": {"preset": "wood", "pattern": "oak", "color": "#d2b58c", "baseColor": "#d2b58c", "roughness": 0.6, "metalness": 0.0},
+        "wall": {"preset": "plaster", "pattern": "plaster", "color": "#f6efe3", "baseColor": "#f6efe3", "roughness": 0.93, "metalness": 0.0},
+        "ceiling": {"preset": "paint", "pattern": "plaster", "color": "#fbf6ee", "baseColor": "#fbf6ee", "roughness": 0.95, "metalness": 0.0},
+        "featureWall": {"preset": "paint", "pattern": "plaster", "color": "#e6d4b8", "baseColor": "#e6d4b8", "roughness": 0.9, "metalness": 0.0},
+        "door": {"preset": "wood", "pattern": "ash", "color": "#dcc5a2", "baseColor": "#dcc5a2", "roughness": 0.62, "metalness": 0.0},
+        "window": {"preset": "glass", "pattern": "glass", "color": "#c3cec9", "baseColor": "#c3cec9", "roughness": 0.1, "metalness": 0.18, "opacity": 0.3}
+      },
+      "furniture": {"sofa": "boucle", "chair": "boucle", "table": "oak", "cabinet": "paint", "bed": "boucle", "lamp": "ceramic", "rug": "wool", "plant": "ceramic"},
+      "decor": {"frame": "#c7a988", "pot": "#b99677", "leaf": "#627552", "accent": "#e6d4b8"}
+    }
+  ]
+}

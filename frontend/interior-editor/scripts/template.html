@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>__INTERIOR_TITLE__ · 室内三维</title>
+<style>__INTERIOR_CSS__</style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="ie-public-mark" viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Zm0 2.3L19 8l-7 3.9L5 8l7-3.7Z"/></symbol>
+</svg>
+<div id="app"></div>
+<noscript><p style="font-family:sans-serif;padding:24px">室内三维编辑器需要启用本机浏览器的 JavaScript 与 WebGL。</p></noscript>
+<script id="interior-bootstrap" type="application/json">__INTERIOR_BOOTSTRAP__</script>
+<script>
+window.FixedInterior = window.FixedInterior || {ready: false};
+(function () {
+  var node = document.getElementById('interior-bootstrap');
+  if (!node) {
+    document.body.innerHTML = '<p style="font-family:sans-serif;padding:24px">场景引导数据缺失。</p>';
+    return;
+  }
+  try {
+    var bootstrap = JSON.parse(node.textContent);
+    var uri = bootstrap['editor-model'] || '';
+    var comma = uri.indexOf(',');
+    if (comma < 0) throw new Error('编辑器模型编码无效');
+    var binary = atob(uri.slice(comma + 1));
+    var bytes = new Uint8Array(binary.length);
+    for (var index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    var code = new TextDecoder('utf-8').decode(bytes);
+    var script = document.createElement('script');
+    script.textContent = code;
+    document.body.appendChild(script);
+  } catch (error) {
+    var app = document.getElementById('app');
+    if (app) app.innerHTML = '<div class="ie-fatal"><h1>编辑器载入失败</h1><p></p></div>';
+    var paragraph = app && app.querySelector('p');
+    if (paragraph) paragraph.textContent = String((error && error.message) || error);
+    if (window.console) console.error(error);
+  }
+})();
+</script>
+</body>
+</html>

@@ -11,10 +11,12 @@ from __future__ import annotations
 import contextlib
 import hashlib
 import json
+import os
 import re
 import secrets
 import shutil
 import sqlite3
+import stat
 import tempfile
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -23,7 +25,7 @@ from pathlib import Path
 from .documents import safe_name
 from .store import Store
 
-BACKUP_FILES = ("workbench.sqlite3", "attachments", "knowledge", "resources", "reports")
+BACKUP_FILES = ("workbench.sqlite3", "attachments", "knowledge", "resources", "reports", "deliverables", "workspaces")
 SAFE_COLUMNS = {
     "sessions": ("id", "title", "workspace", "provider", "skills", "created_at", "updated_at", "profile", "pinned"),
     "messages": ("id", "session_id", "role", "content", "metadata", "created_at"),
@@ -49,8 +51,10 @@ class LegacyScope:
     @property
     def fingerprint(self) -> str:
         try:
-            stat = self.database.stat()
-            value = f"{self.database.resolve()}|{stat.st_size}|{stat.st_mtime_ns}"
+            info = self.database.stat()
+            wal = Path(str(self.database) + "-wal")
+            wal_info = wal.stat() if wal.is_file() else None
+            value = f"{self.database.resolve()}|{info.st_size}|{info.st_mtime_ns}|{(wal_info.st_size, wal_info.st_mtime_ns) if wal_info else ''}"
         except OSError:
             value = str(self.database.resolve())
         return hashlib.sha256(value.encode("utf-8")).hexdigest()[:32]
@@ -64,10 +68,19 @@ def _slug(value: str) -> str:
     return re.sub(r"[^a-z0-9-]+", "-", value.lower()).strip("-") or "workspace"
 
 
+def _is_link(path: Path) -> bool:
+    """Treat Windows junctions (reparse points) like symlinks, not real folders."""
+    try:
+        info = path.lstat()
+    except OSError:
+        return True
+    return stat.S_ISLNK(info.st_mode) or bool(getattr(info, "st_file_attributes", 0) & 0x400)
+
+
 def discover(source: str | Path) -> list[LegacyScope]:
     root = Path(source).expanduser()
-    if root.is_symlink():
-        raise ValueError("旧数据目录不能是链接")
+    if _is_link(root):
+        raise ValueError("旧数据目录不能是链接或目录连接")
     try:
         root = root.resolve(strict=True)
     except OSError as error:
@@ -80,7 +93,7 @@ def discover(source: str | Path) -> list[LegacyScope]:
     members = root / "members"
     if members.is_dir():
         candidates = sorted(child for child in members.iterdir()
-                            if child.is_dir() and not child.is_symlink()
+                            if child.is_dir() and not _is_link(child)
                             and (child / "workbench.sqlite3").is_file())
         for index, child in enumerate(candidates, 1):
             scopes.append(LegacyScope(f"member-{index}", f"旧会员工作区 {index}", child,
@@ -127,18 +140,33 @@ def preview(source: str | Path) -> dict:
 
 def _copy_database(scope: LegacyScope, destination: Path) -> None:
     """Copy a database and any SQLite sidecars without writing to the source."""
-    shutil.copy2(scope.database, destination)
-    for suffix in ("-wal", "-shm"):
-        sidecar = Path(str(scope.database) + suffix)
-        if sidecar.is_file() and not sidecar.is_symlink():
-            shutil.copy2(sidecar, Path(str(destination) + suffix))
+    if _is_link(scope.database):
+        raise ValueError("旧数据库不能是链接或目录连接")
+    wal = Path(str(scope.database) + "-wal")
+    if wal.exists() and _is_link(wal):
+        raise ValueError("旧数据库 WAL 不能是链接")
+    def signature():
+        return [(path.stat().st_size, path.stat().st_mtime_ns) if path.exists() else None
+                for path in (scope.database, wal)]
+    for _ in range(3):
+        before = signature()
+        shutil.copy2(scope.database, destination)
+        copied_wal = Path(str(destination) + "-wal")
+        if before[1] is not None:
+            shutil.copy2(wal, copied_wal)
+        else:
+            copied_wal.unlink(missing_ok=True)
+        # Rebuild SHM only inside the copy. Never open SQLite on the source.
+        if signature() == before:
+            return
+    raise ValueError("旧数据库仍在变化，请退出旧工作台后再导入")
 
 
 def _copy_tree(source: Path, target: Path) -> None:
     """Copy owned files without following symlinks outside the old data scope."""
     def ignore(directory, names):
         base = Path(directory)
-        return [name for name in names if (base / name).is_symlink()]
+        return [name for name in names if _is_link(base / name)]
     shutil.copytree(source, target, dirs_exist_ok=True, ignore=ignore)
 
 
@@ -150,9 +178,9 @@ def _backup(scope: LegacyScope, destination: Path) -> Path:
             continue
         if name == "workbench.sqlite3":
             _copy_database(scope, destination / name)
-        elif source.is_dir() and not source.is_symlink():
+        elif source.is_dir() and not _is_link(source):
             _copy_tree(source, destination / name)
-        elif source.is_file() and not source.is_symlink():
+        elif source.is_file() and not _is_link(source):
             shutil.copy2(source, destination / name)
     (destination / "manifest.json").write_text(json.dumps({
         "source": str(scope.root), "label": scope.label, "fingerprint": scope.fingerprint,
@@ -169,7 +197,7 @@ def _copy_asset(source: Path, folder: Path, name: str, root: Path) -> Path | Non
         resolved = source.resolve(strict=True)
     except OSError:
         return None
-    if not resolved.is_relative_to(root.resolve()) or not resolved.is_file() or resolved.is_symlink():
+    if _is_link(source) or not resolved.is_relative_to(root.resolve()) or not resolved.is_file():
         return None
     try:
         clean = safe_name(name)
@@ -178,6 +206,21 @@ def _copy_asset(source: Path, folder: Path, name: str, root: Path) -> Path | Non
     destination = folder / (secrets.token_hex(16) + Path(clean).suffix.lower())
     shutil.copy2(resolved, destination)
     return destination
+
+
+def _local_workspace(store: Store, scope: LegacyScope, value) -> Path:
+    """Map an old workspace path to a directory inside the new import, never the source."""
+    imported_root = store.data_dir / "workspaces" / "imported"
+    relative = None
+    try:
+        original = Path(str(value))
+        if original.is_dir() and not _is_link(original):
+            relative = original.resolve().relative_to(scope.root.resolve())
+    except (OSError, ValueError):
+        relative = None
+    target = store.data_dir / relative if relative is not None and relative.parts and relative.parts[0] == "workspaces" else imported_root
+    target.mkdir(parents=True, exist_ok=True)
+    return target
 
 
 def _existing_import(target_root: Path, fingerprint: str) -> Path | None:
@@ -193,7 +236,13 @@ def _existing_import(target_root: Path, fingerprint: str) -> Path | None:
 
 def _import_scope(scope: LegacyScope, database: Path, destination: Path) -> dict:
     store = Store(destination)
+    for name in ("workspaces", "deliverables"):
+        directory = scope.root / name
+        if directory.is_dir() and not _is_link(directory):
+            _copy_tree(directory, store.data_dir / name)
     rows = {table: _rows(database, table) for table in SAFE_COLUMNS}
+    if any(not isinstance(row.get("id"), str) or not re.fullmatch(r"[A-Za-z0-9_-]{1,100}", row["id"]) for row in rows["sessions"]):
+        raise ValueError("旧会话标识含有非法路径字符，已拒绝导入")
     copied = {"files": 0, "resources": 0, "knowledge": 0, "reports": 0}
     skipped = {"files": 0, "resources": 0, "knowledge": 0, "reports": 0}
 
@@ -242,18 +291,24 @@ def _import_scope(scope: LegacyScope, database: Path, destination: Path) -> dict
                     db.execute("INSERT INTO knowledge_fts(chunk_id,content) VALUES (?,?)", (chunk["id"], chunk["content"]))
 
     for row in rows["reports"]:
-        source = Path(row["path"])
+        original = Path(row["path"])
         try:
-            source = source.resolve(strict=True)
+            source = original.resolve(strict=True)
         except OSError:
             skipped["reports"] += 1
             continue
-        folder = store.data_dir / "reports" / row["id"]
-        if not source.is_file() or source.is_symlink() or not source.is_relative_to(scope.root.resolve()):
+        report_id = str(row["id"])
+        if not re.fullmatch(r"[A-Za-z0-9_-]{1,64}", report_id) or report_id in {".", ".."}:
+            report_id = secrets.token_hex(16)
+        folder = store.data_dir / "reports" / report_id
+        if _is_link(original) or not source.is_file() or not source.is_relative_to(scope.root.resolve()):
             skipped["reports"] += 1
             continue
         target = folder / source.name
         folder.mkdir(parents=True, exist_ok=True)
+        old_reports = scope.root / "reports"
+        if source.parent != old_reports and source.parent.is_relative_to(old_reports):
+            _copy_tree(source.parent, folder)
         shutil.copy2(source, target)
         row["path"] = str(target)
         copied["reports"] += 1
@@ -266,10 +321,7 @@ def _import_scope(scope: LegacyScope, database: Path, destination: Path) -> dict
             db.execute("INSERT OR REPLACE INTO memories VALUES (?,?,?,?,?)",
                        tuple(row[column] for column in SAFE_COLUMNS["memories"]))
         for row in rows["sessions"]:
-            workspace = Path(str(row["workspace"]))
-            if not workspace.is_dir() or workspace.is_symlink():
-                workspace = store.data_dir / "workspaces" / "imported"
-                workspace.mkdir(parents=True, exist_ok=True)
+            workspace = _local_workspace(store, scope, row.get("workspace"))
             provider = row.get("provider") if row.get("provider") in {"codex", "codebuddy"} else "codex"
             skills = row.get("skills")
             if not isinstance(skills, str):
@@ -307,23 +359,44 @@ def _import_scope(scope: LegacyScope, database: Path, destination: Path) -> dict
     }
 
 
+def _assert_target_outside_source(scopes: list[LegacyScope], root: Path) -> None:
+    """A target inside the legacy tree would write backups/imports into the source."""
+    for scope in scopes:
+        source_root = scope.root.resolve()
+        if root == source_root or root.is_relative_to(source_root):
+            raise ValueError("目标数据目录不能位于旧数据目录内部，避免改写源数据；请选择独立目录")
+
+
 def import_legacy(source: str | Path, target_root: str | Path, *, dry_run: bool = False) -> dict:
     scopes = discover(source)
+    source_root = Path(source).expanduser().resolve()
     root = Path(target_root).expanduser().resolve()
-    root.mkdir(parents=True, exist_ok=True)
+    if root == source_root or root.is_relative_to(source_root):
+        raise ValueError("目标数据目录不能位于旧数据目录内部，避免改写源数据；请选择独立目录")
+    _assert_target_outside_source(scopes, root)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S") + "-" + secrets.token_hex(3)
     backup_root = root.parent / "backups" / ("legacy-" + stamp)
+    if backup_root.is_relative_to(source_root):
+        raise ValueError("备份目录不能位于旧数据目录内部，请选择独立的目标数据目录")
+    if not dry_run:
+        root.mkdir(parents=True, exist_ok=True)
     workspaces = []
-    for scope in scopes:
+    for index, scope in enumerate(scopes):
         existing = _existing_import(root, scope.fingerprint)
         if existing:
             workspaces.append({"key": scope.key, "label": scope.label, "path": str(existing),
                                "already_imported": True, "fingerprint": scope.fingerprint})
             continue
         if dry_run:
+            # Count from a temporary copy so a read-only WAL database never
+            # gets -shm/-wal sidecars created inside the old source directory.
+            with tempfile.TemporaryDirectory(prefix="architecture-legacy-dryrun-") as temporary:
+                database = Path(temporary) / (str(index) + ".sqlite3")
+                _copy_database(scope, database)
+                sessions = len(_rows(database, "sessions"))
+                messages = len(_rows(database, "messages"))
             workspaces.append({"key": scope.key, "label": scope.label, "path": "", "dry_run": True,
-                               "sessions": len(_rows(scope.database, "sessions")),
-                               "messages": len(_rows(scope.database, "messages")),
+                               "sessions": sessions, "messages": messages,
                                "fingerprint": scope.fingerprint})
             continue
         backup_database = _backup(scope, backup_root / scope.key)
@@ -332,9 +405,12 @@ def import_legacy(source: str | Path, target_root: str | Path, *, dry_run: bool 
         try:
             result = _import_scope(scope, backup_database, destination)
         except Exception:
-            # The just-created destination is the only cleanup target.
+            # Remove the partial destination and the now-empty stamp folder;
+            # the verified backup is intentionally kept for inspection.
             if destination.resolve().is_relative_to(root.resolve()):
                 shutil.rmtree(destination, ignore_errors=True)
+                with contextlib.suppress(OSError):
+                    destination.parent.rmdir()
             raise
         (destination / "legacy-import.json").write_text(json.dumps({
             **result, "source": str(scope.root), "status": "imported", "imported_at": _now(),

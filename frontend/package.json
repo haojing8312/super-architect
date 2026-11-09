@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build"
+    "build": "tsc -b && tsc -p interior-editor/tsconfig.json && vite build --config vite.interior.config.ts && node interior-editor/scripts/build-resources.mjs && vite build",
+    "build:interior": "vite build --config vite.interior.config.ts && node interior-editor/scripts/build-resources.mjs",
+    "typecheck:interior": "tsc -p interior-editor/tsconfig.json",
+    "test:interior": "node --test interior-editor/test/contract.test.mjs"
   },
   "dependencies": {
     "react": "^19.2.4",

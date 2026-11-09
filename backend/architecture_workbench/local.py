@@ -43,6 +43,68 @@ def register_local(app):
     router = APIRouter(prefix="/api/local")
     store = app.state.store
 
+    @router.get("/dashboard")
+    def dashboard():
+        """Persisted task outcomes plus the runtime's actual active sessions."""
+        from .deliverables import get_deliverable
+        active = set(app.state.runtime_manager.active)
+        with store.connection() as db:
+            questions = db.execute("SELECT session_id,question FROM interaction_questions WHERE status='pending' ORDER BY created_at DESC").fetchall()
+            waiting = {}
+            for question in questions:
+                waiting.setdefault(question["session_id"], question["question"])
+            sessions = db.execute("SELECT * FROM sessions ORDER BY updated_at DESC LIMIT 50").fetchall()
+            tasks, media = [], []
+            for session in sessions:
+                latest = db.execute("SELECT * FROM messages WHERE session_id=? AND role IN ('assistant','system') ORDER BY created_at DESC,rowid DESC LIMIT 1", (session["id"],)).fetchone()
+                metadata = {}
+                if latest:
+                    try:
+                        metadata = json.loads(latest["metadata"])
+                    except (TypeError, ValueError):
+                        pass
+                if not isinstance(metadata, dict):
+                    metadata = {}
+                context = {}
+                context_root = store.data_dir / "runtime-context"
+                context_file = context_root / (session["id"] + ".json")
+                if context_file.resolve().is_relative_to(context_root.resolve()) and not context_file.is_symlink():
+                    try:
+                        if context_file.stat().st_size < 16_384:
+                            value = json.loads(context_file.read_text(encoding="utf-8"))
+                            if isinstance(value, dict):
+                                context = value
+                    except (OSError, ValueError):
+                        pass
+                status = "running" if session["id"] in active else None
+                if session["id"] in waiting:
+                    status = "awaiting_input"
+                elif not status and context.get("status") in {"completed", "cancelled", "failed", "running"}:
+                    status = "failed" if context["status"] == "running" else context["status"]
+                elif not status and latest and "completed" in metadata:
+                    status = "completed" if metadata["completed"] else "cancelled" if "取消" in latest["content"] else "failed"
+                if status:
+                    profile = session["profile"] or "assistant"
+                    department = "review" if profile in {"webreport", "ppt"} else "bim" if profile in {"blender", "rhino", "revit", "sketchup", "grasshopper"} else "architecture" if profile in {"autocad", "cad"} else None
+                    tasks.append({"id": session["id"], "sessionId": session["id"], "title": session["title"], "status": status,
+                                  "department": department, "updatedAt": session["updated_at"],
+                                  "detail": waiting.get(session["id"], "") or (latest["content"][:100] if status == "failed" else "")})
+                if latest:
+                    for index, artifact in enumerate(metadata.get("artifacts", []) if isinstance(metadata.get("artifacts", []), list) else []):
+                        if isinstance(artifact, dict) and artifact.get("path"):
+                            media.append({"id": latest["id"] + ":" + str(index), "sessionId": session["id"],
+                                          "title": Path(artifact["path"]).name, "kind": artifact.get("kind", "文件"), "updatedAt": latest["created_at"]})
+            rows = db.execute("SELECT id FROM canvases WHERE id LIKE 'deliverable-%' ORDER BY updated_at DESC LIMIT 8").fetchall()
+        artifacts = []
+        for row in rows:
+            try:
+                item = get_deliverable(store, row["id"][len("deliverable-"):])
+            except (KeyError, ValueError):
+                continue
+            artifacts.append({"id": item["id"], "title": item["title"], "kind": " / ".join(item["formats"]), "updatedAt": item["created_at"]})
+        tasks.sort(key=lambda task: task["status"] not in {"running", "awaiting_input"})
+        return {"tasks": tasks[:8], "artifacts": sorted(artifacts + media, key=lambda item: item.get("updatedAt", ""), reverse=True)[:8]}
+
     @router.get("/info")
     def info():
         settings = store.get_settings()

@@ -1,4 +1,4 @@
-import {getAccountScope, getToken, Row} from './api';
+import {getToken, Row} from './api';
 
 export type CollaborationStatus = Row & {
   role: 'host' | 'guest' | 'none'; status: string; connected: boolean; canvas_id: string | null;
@@ -13,11 +13,10 @@ const bindings = new Map<string, CollaborationBinding>();
 const observers = new Set<(value: CollaborationStatus) => void>();
 let latest: CollaborationStatus | null = null, snapshotRequest: Promise<CollaborationStatus> | null = null, commandTail: Promise<void> = Promise.resolve(), contextEpoch = 0, contextChanging = false;
 let branchId: string | null = null;
-let draftScopePromise: Promise<string> | null = null, draftScope = 'anonymous';
 export function canvasWindowBranch(): string {
   if (branchId) return branchId;
   try {
-    const storageKey = 'architecture-canvas-draft-branch' + (draftScope === 'anonymous' ? '' : ':' + encodeURIComponent(draftScope));
+    const storageKey = 'architecture-canvas-draft-branch';
     const existing = sessionStorage.getItem(storageKey);
     const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
     // New tabs/window.open can inherit sessionStorage from their opener. Only
@@ -86,13 +85,10 @@ function serialize<T>(operation: () => Promise<T>): Promise<T> {
 export function collaborationAction(action: 'host' | 'stop' | 'join' | 'disconnect' | 'reconnect', body: Row = {}) {return serialize(async () => {contextChanging = true; contextEpoch++; try {return await request('/' + action, body);} finally {contextChanging = false; contextEpoch++; snapshotRequest = null;}});}
 
 async function openDraftDatabase(): Promise<IDBDatabase> {
-  // Capture scope once for this document. Pending writes from an old page stay
-  // private to its original account even while a login response rotates tokens.
-  if (!draftScopePromise) draftScopePromise = getAccountScope().then(scope => {draftScope = scope; return scope;});
-  const scope = await draftScopePromise;
+  // Local mode has one workspace; a full page reload creates new module state.
   return new Promise((resolve, reject) => {
     if (!globalThis.indexedDB) {reject(new CollaborationError('当前窗口不能持久化协作草稿，请先另存本地项目')); return;}
-    const databaseName = 'architecture-canvas-collaboration-drafts' + (scope === 'anonymous' ? '' : ':' + encodeURIComponent(scope));
+    const databaseName = 'architecture-canvas-collaboration-drafts';
     const operation = indexedDB.open(databaseName, 1);
     operation.onupgradeneeded = () => {operation.result.createObjectStore('drafts', {keyPath: 'canvasId'});};
     operation.onsuccess = () => resolve(operation.result); operation.onerror = () => reject(operation.error || new Error('协作草稿存储无法打开'));

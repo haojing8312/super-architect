@@ -146,23 +146,6 @@ class CanvasCollaboration:
         self.join_settings=None;self.send_lock=asyncio.Lock();self.conflict_hashes={}
         self.last_ack_change_id=None;self.last_ack_revision=None;self.last_change_id=None;self.remote_peer_count=0
 
-    def reset_idle_binding(self):
-        """Forget private stopped-share metadata when the account epoch changes.
-
-        The member lifecycle holds operation_lock and has checked role=none.
-        Preserve that shared lock so later account/share operations still serialize.
-        Canvas documents themselves remain in their original Store databases.
-        """
-        if self.role!='none':raise RuntimeError('Active collaboration must stop before account change')
-        operation_lock=self.operation_lock
-        fresh=CanvasCollaboration(self.store,self.projects,self.watch_interval)
-        self.__dict__.update(fresh.__dict__)
-        self.operation_lock=operation_lock
-
-    def _check_account(self):
-        if getattr(self.store,'closing',False) or (hasattr(self.store,'bound_epoch') and self.store.bound_epoch!=self.store.epoch):
-            raise HTTPException(409,'会员工作区已改变，请重新打开客户端')
-
     def state(self,sender='',change_id=''):
         return {'type':'state','protocol':PROTOCOL,'revision':self.revision,'hash':self.hash,
                 'document':self.document,'sender':sender or self.peer_id,'change_id':change_id,'peer_count':len(self.peers)}
@@ -308,7 +291,6 @@ class CanvasCollaboration:
         # Match public publish's lifecycle lock order. A remote state uses the
         # canvas lock, so sample its revision together with the Store snapshot.
         async with self.operation_lock:
-            self._check_account()
             async with self.lock:
                 if self.role!='guest' or self.status!='connected' or self.pending is not None:return
                 changed=await asyncio.to_thread(self._updated)
@@ -327,7 +309,6 @@ class CanvasCollaboration:
 
     async def start_host(self,canvas_id,bind_host='0.0.0.0',port=33822):
         async with self.operation_lock:
-            self._check_account()
             if self.role!='none':raise HTTPException(409,'请先停止分享或断开当前协作')
             if not isinstance(canvas_id,str) or not canvas_id or len(canvas_id)>200:raise ValueError('画布ID无效')
             if not isinstance(bind_host,str) or (bind_host!='0.0.0.0' and not private_address(bind_host)):raise ValueError('分享仅绑定本机/私人LAN接口')
@@ -417,7 +398,6 @@ class CanvasCollaboration:
 
     async def join(self,url,invite_code,name=None,reconnect=False):
         async with self.operation_lock:
-            self._check_account()
             if self.role=='host' or self.status=='connected':raise HTTPException(409,'请先停止分享或断开当前连接')
             url=join_url(url)
             if not isinstance(invite_code,str) or not re_invite(invite_code):raise ValueError('邀请码格式无效')
@@ -473,7 +453,6 @@ class CanvasCollaboration:
         # Context transitions (host/join/stop/reconnect) use this same lock.
         # Check after acquiring it, not from an earlier browser GET receipt.
         async with self.operation_lock:
-            self._check_account()
             if (canvas_id is not None and canvas_id!=self.canvas_id) or (peer_id is not None and peer_id!=self.peer_id):
                 if not isinstance(document,dict):raise ValueError('协作提交须提供document对象')
                 submitted=copy.deepcopy(document);await asyncio.to_thread(_native,submitted)
@@ -525,7 +504,6 @@ class CanvasCollaboration:
 
     async def disconnect(self):
         async with self.operation_lock:
-            self._check_account()
             if self.role=='host':raise HTTPException(409,'主机请使用停止分享')
             self.status='disconnected'
             await self._cancel_task(self.watch_task);self.watch_task=None
@@ -555,7 +533,6 @@ class CanvasCollaboration:
 
     async def stop(self,force=False):
         async with self.operation_lock:
-            if not force:self._check_account()
             if self.role=='host':await self._close_host()
             elif self.role=='guest':
                 await self._cancel_task(self.watch_task)

@@ -21,6 +21,8 @@ frontend/tsconfig.tsbuildinfo
 AGENTS.md
 docs/*
 !docs/open-source-local-design-proposal.md
+!docs/parity-matrix.md
+!docs/optional-components.md
 validation/
 frontend/public/cad-viewer/
 frontend/public/report-builder/

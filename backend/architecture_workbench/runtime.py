@@ -472,16 +472,13 @@ def register_runtime(app):
     manager = RuntimeManager(app.state.store, catalog)
     app.state.runtime_manager = manager
     app.router.add_event_handler("shutdown", manager.shutdown)
-    standalone_scope_lock = asyncio.Lock()
+    scope_lock = asyncio.Lock()
 
     @asynccontextmanager
     async def reserve_scope():
-        # The runtime module also supports a standalone local Store without
-        # the optional management-service integration.
-        remote = getattr(app.state, "remote", None)
-        async with remote._scope_lock if remote else standalone_scope_lock:
-            if remote:
-                remote._assert_scope_current()
+        # One local runtime turn is prepared at a time; the extra lock keeps
+        # catalog lookup and resource reservation atomic under concurrent HTTP.
+        async with scope_lock:
             yield
 
     @router.get("/runtimes")

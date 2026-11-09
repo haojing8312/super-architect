@@ -1,4 +1,4 @@
-"""Member-owned knowledge collections and source-backed design handoffs.
+"""Local knowledge collections and source-backed design handoffs.
 
 This reuses the existing document index, canvas projects and runtime. Collection
 membership is a local filter, never a replacement identity or document store.

@@ -151,7 +151,7 @@ class UsageService:
         return {"items": items, "totals": subtotal(items), "providers": providers, "days": days,
                 "timezone": zone_name, "since": lower.isoformat() if lower else None, "until": upper.isoformat() if upper else None,
                 "current_models": models, "source": "persisted-native-runtime-receipts",
-                "note": "已知值是回执小计；未返回的用量保持未知。实际账单由本机工具账户负责，后台会员积分不会自动扣减。"}
+                "note": "已知值是回执小计；未返回的用量保持未知。实际账单由本机工具账户负责。"}
 
 
 def register_usage(app):

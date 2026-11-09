@@ -16,10 +16,11 @@ def main():
         stdio_main()
         return
     parser = argparse.ArgumentParser(prog="architecture-workbench", description="超级建筑师")
-    parser.add_argument("command", nargs="?", default="desktop", choices=["desktop", "serve", "mcp", "check", "init-skills"])
+    parser.add_argument("command", nargs="?", default="desktop", choices=["desktop", "serve", "mcp", "check", "init-skills", "import-legacy"])
     parser.add_argument("--data-dir", default=None)
     parser.add_argument("--port", type=int, default=33821)
     parser.add_argument("--source", default="")
+    parser.add_argument("--dry-run", action="store_true")
     arguments = parser.parse_args()
     if arguments.command == "mcp":
         from .stdio import main as stdio_main
@@ -60,6 +61,14 @@ def main():
                 except ValueError as error:
                     output.append({"id":child.name,"error":str(error)})
         print(json.dumps(output,ensure_ascii=False,indent=2))
+    elif arguments.command == "import-legacy":
+        from .migration import import_legacy
+        from .store import Store
+        if not arguments.source:
+            parser.error("import-legacy 需要 --source 指向旧版本数据目录")
+        store = Store(arguments.data_dir)
+        print(json.dumps(import_legacy(arguments.source, store.data_dir / "imports",
+                                      dry_run=arguments.dry_run), ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":

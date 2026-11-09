@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 from architecture_workbench.app import create_app
 from architecture_workbench.design_workflow import KnowledgeCollections, canvas_deliverable_draft
 from architecture_workbench.store import Store
-from architecture_workbench.workspaces import WorkspaceStore
 
 
 def fixture(store, directory, name, content):
@@ -73,23 +72,6 @@ def test_selected_real_citation_to_canvas_and_editable_draft(tmp_path):
         service.cards("入口", citation_ids=["RAG-FORGED"])
     store.save_canvas("default", doc)
     assert canvas_deliverable_draft(store, "default")["sections"]
-
-
-def test_member_realm_collection_and_board_are_isolated(tmp_path):
-    store = WorkspaceStore(tmp_path / "data")
-    service = KnowledgeCollections(store)
-    a = service.create("匿名库")
-    item = fixture(store, tmp_path, "private.txt", "匿名私有词：青鹤。")
-    service.link(a["id"], item["id"])
-    board = service.cards("青鹤", a["id"], citation_ids=[service.query("青鹤", collection_id=a["id"])[0]["citation_id"]])
-    store.activate("https://one.example", 0, 10)
-    assert service.list() == []
-    with pytest.raises(KeyError):
-        service.documents(a["id"])
-    with pytest.raises(ValueError):
-        canvas_deliverable_draft(store, board["canvas_id"])
-    store.activate()
-    assert service.get(a["id"])["name"] == "匿名库"
 
 
 def test_large_canvas_rejected_without_silently_dropping_sections(tmp_path):

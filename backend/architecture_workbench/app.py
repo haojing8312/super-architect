@@ -14,7 +14,7 @@ from pydantic import BaseModel, Field
 
 from . import __version__
 from .documents import IMAGE_MIMES, local_path, preview_dxf
-from .workspaces import WorkspaceStore
+from .store import Store
 
 log = logging.getLogger(__name__)
 
@@ -51,7 +51,7 @@ class ReportInput(BaseModel):
 
 def create_app(data_dir: str | Path | None = None) -> FastAPI:
     application = FastAPI(title="超级建筑师本地服务", version=__version__)
-    store = WorkspaceStore(data_dir)
+    store = Store(data_dir)
     application.state.store = store
     from .security import register_security
     register_security(application)
@@ -77,7 +77,7 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
     @application.get("/api/health")
     def health():
         configured = bool(store.get_settings().get("embedding_model_dir"))
-        return {"status": "ok", "product": "architecture-workbench", "version": __version__, "database": "sqlite",
+        return {"status": "ok", "product": "architecture-workbench", "mode": "local", "version": __version__, "database": "sqlite",
                 "knowledge_search": "semantic+keyword" if configured else "fts5+substring" if store.fts_available else "substring",
                 "semantic_configured": configured, "semantic_model_verified": None}
 
@@ -131,8 +131,8 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
         return store.get_settings()
 
     @application.put("/api/settings")
-    async def save_settings(body: dict = Body(...)):
-        return JSONResponse(await application.state.remote.update_settings(body), headers={"X-Workbench-Account-Scope": store.account_scope})
+    def save_settings(body: dict = Body(...)):
+        return store.save_settings(body)
 
     @application.get("/api/memories")
     def memories():
@@ -281,8 +281,6 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
     register_usage(application)
     from .embeddings import close_all_workers
     application.router.add_event_handler("shutdown", close_all_workers)
-    from .remote import register_remote
-    register_remote(application)
     from .report_builder import register_report_builder
     register_report_builder(application)
     from .geometry import register_geometry
@@ -295,10 +293,8 @@ def create_app(data_dir: str | Path | None = None) -> FastAPI:
     from .interior import register_interior
     register_deliverables(application)
     register_interior(application)
-    from .cloud import register_cloud
-    register_cloud(application)
-    from .updates import register_updates
-    register_updates(application)
+    from .local import register_local
+    register_local(application)
 
     # Frozen builds put the pre-built frontend alongside the package.
     candidates = [Path(__file__).resolve().parent / "frontend", Path(__file__).resolve().parents[2] / "frontend" / "dist"]

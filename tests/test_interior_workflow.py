@@ -14,7 +14,13 @@ from fastapi.testclient import TestClient
 from architecture_workbench.interior import InteriorService, PRIMARY_SOURCE_REFERENCE, register_interior
 from architecture_workbench.security import register_security
 from architecture_workbench.store import Store
-from architecture_workbench.workspaces import WorkspaceStore
+
+PROJECT = Path(__file__).resolve().parents[1]
+EDITOR_ROOT = PROJECT / "resources" / "skills" / "固定编辑器"
+pytestmark = pytest.mark.skipif(
+    not EDITOR_ROOT.is_dir(),
+    reason="可选参考室内编辑器资源未包含在公开源码；核心启动不依赖它，复现需自备或替代资源",
+)
 
 
 def plan_bytes():
@@ -122,22 +128,6 @@ def test_pdf_selected_page_is_enforced_and_bitmap_is_verified(tmp_path):
     scene["source"]["page"] = 1
     with pytest.raises(ValueError, match="页码"): interior.save_scene(task["id"], scene)
     with pytest.raises(ValueError, match="页码"): interior.create({"file_id": source["id"], "page": 3})
-
-
-def test_account_scope_does_not_share_tasks_or_sources(tmp_path):
-    store = WorkspaceStore(tmp_path / "members")
-    interior = InteriorService(store)
-    a = store.activate("https://archi.taoofagi.com", 1, "member-a")
-    source = store.save_attachment("plan.png", io.BytesIO(plan_bytes()))
-    task = interior.create({"file_id": source["id"]})
-    with store.bind():
-        store.activate("https://archi.taoofagi.com", 1, "member-b")
-        assert interior.get(task["id"])["source"]["id"] == source["id"]
-    assert interior.list() == []
-    with pytest.raises(KeyError): interior.get(task["id"])
-    with pytest.raises(KeyError): interior.create({"file_id": source["id"]})
-    store.activate("https://archi.taoofagi.com", 1, "member-a")
-    assert len(interior.list()) == 1
 
 
 def test_http_preview_is_opaque_and_uses_existing_nonce(service):

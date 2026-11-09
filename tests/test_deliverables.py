@@ -76,7 +76,7 @@ def test_html_is_offline_escaped_and_all_motion_candidates_survive(tmp_path):
 
 @pytest.mark.parametrize('reference', ['../private.png', 'file:///C:/private.png', 'https://example.com/image.png', '/api/resources/'+'a'*32+'/file?token=secret', '/api/files/not-an-id'])
 def test_export_rejects_unowned_asset_paths(reference):
-    with pytest.raises(ValueError, match='当前会员'):
+    with pytest.raises(ValueError, match='当前本地'):
         normalize_spec({'title': 'x', 'sections': [{'title': 'x', 'assets': [reference]}]})
 
 
@@ -93,7 +93,7 @@ def test_failure_cleans_only_the_new_owned_export(tmp_path, monkeypatch):
     assert len(list((store.data_dir / 'deliverables').iterdir())) == 1
 
 
-def test_account_owned_routes_download_and_reopen(tmp_path):
+def test_local_deliverable_routes_download_and_reopen(tmp_path):
     app = create_app(tmp_path / 'data')
     if '/api/deliverables' not in app.openapi()['paths']:
         register_deliverables(app)
@@ -102,7 +102,7 @@ def test_account_owned_routes_download_and_reopen(tmp_path):
         app.router.routes.insert(0, app.router.routes.pop())
     with TestClient(app) as client:
         client.headers['X-Workbench-Token'] = client.get('/api/bootstrap').json()['token']
-        spec = synthetic_spec(app.state.store.current, tmp_path)
+        spec = synthetic_spec(app.state.store, tmp_path)
         created = client.post('/api/deliverables', json=spec)
         assert created.status_code == 201, created.text
         imported=client.post('/api/deliverables/validate',json=spec)
@@ -126,16 +126,6 @@ def test_account_owned_routes_download_and_reopen(tmp_path):
         assert preview.headers['content-disposition'].startswith('inline')
         assert 'sandbox allow-scripts' in preview.headers['content-security-policy']
         assert client.get('/api/deliverables/'+ident+'/file?format=private').status_code == 422
-        old_token = client.headers['X-Workbench-Token']
-        app.state.store.activate('https://synthetic.example', 0, 'member-two')
-        assert client.get('/api/deliverables').status_code == 401
-        client.headers['X-Workbench-Token'] = client.get('/api/bootstrap').json()['token']
-        assert client.get('/api/deliverables').json()['items'] == []
-        assert client.get('/api/deliverables/'+ident).status_code == 404
-        assert client.get(item['formats']['html']['url']).status_code == 404
-        assert client.post('/api/deliverables', json=spec).status_code == 404
-        assert client.post('/api/deliverables/validate',json=spec).status_code==404
-        assert app.state.local_token != old_token
 
 
 def test_complete_editor_export_preserves_user_assignment_and_docs(tmp_path):

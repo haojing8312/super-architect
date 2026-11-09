@@ -1,6 +1,9 @@
-"""Static/resource tests and opt-in real LibreDWG browser validation.
+"""Binary CAD transport tests and opt-in real LibreDWG browser validation.
 
-Run the real browser validation with a Python that has Playwright installed:
+The public source tree intentionally does not ship the reference CAD viewer
+bundle. This module only verifies the local binary transport by default; the
+browser validation is opt-in and requires a separately installed viewer.
+Run it with a Python that has Playwright installed:
 python tests/test_dwg_assets.py --browser
 """
 from __future__ import annotations
@@ -26,28 +29,6 @@ from architecture_workbench.store import Store
 
 PROJECT=Path(__file__).resolve().parents[1]
 VIEWER=PROJECT/"frontend"/"public"/"cad-viewer"
-
-def test_all_original_workers_and_license_notices_are_present():
-    provenance=json.loads((VIEWER/"provenance.json").read_text(encoding="utf-8"))
-    assert len(provenance["assets"]) == 5
-    for asset in provenance["assets"]:
-        path=VIEWER/"assets"/asset["file"]
-        assert hashlib.sha256(path.read_bytes()).hexdigest() == asset["sha256"]
-    wasm_worker=(VIEWER/"assets"/"libredwg-parser-worker.js").read_text(encoding="utf-8")
-    assert "WebAssembly" in wasm_worker and len(wasm_worker)>9_000_000
-    assert provenance["licenses"]["dwg_worker"] == "GPL-3.0"
-    assert (VIEWER/"licenses"/"LibreDWG-GPL-3.0.txt").stat().st_size>30000
-    assert (VIEWER/"licenses"/"Noto-OFL.txt").is_file()
-
-def test_runtime_fonts_are_local_and_bridge_restricts_origin():
-    code=(VIEWER/"assets"/"main-BfwC0mNK.js").read_text(encoding="utf-8")
-    assert "https://mlightcad.gitlab.io/cad-data/" not in code
-    assert "window.CadWorkbenchBridge.install" in code
-    fonts=json.loads((VIEWER/"data"/"fonts"/"fonts.json").read_text(encoding="utf-8"))
-    assert (VIEWER/"data"/"fonts"/fonts[0]["file"]).stat().st_size>1_000_000
-    bridge=(VIEWER/"bridge.js").read_text(encoding="utf-8")
-    assert "event.origin !== location.origin" in bridge
-    assert "address.pathname.startsWith('/api/cad/files/')" in bridge
 
 def test_binary_cad_transport_preserves_extension_and_blocks_other_files(tmp_path):
     store=Store(tmp_path/"data")

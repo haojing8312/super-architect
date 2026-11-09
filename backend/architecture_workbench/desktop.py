@@ -17,26 +17,6 @@ class DesktopApi:
         self._window = None
         self._origin = origin
         self.maximized = False
-        self.force_exit = False
-        self.update_intent = False
-
-    def install_update(self, version):
-        self._assert_trusted()
-        self.update_intent = True
-        try:
-            with httpx.Client(base_url=self._origin, trust_env=False, timeout=65) as client:
-                token = client.get('/api/bootstrap').json()['token']
-                response = client.post('/api/update/prepare', json={'version':version}, headers={'X-Workbench-Token':token})
-                if not response.is_success:
-                    raise ValueError(response.json().get('detail','升级准备未完成'))
-                receipt=response.json()
-                if receipt.get('ready') is not True or receipt.get('version') != version:
-                    raise ValueError('升级窗口尚未就绪，工作台保持打开')
-            self.force_exit = True
-            self._window.destroy()
-            return {'ready':True}
-        finally:
-            self.update_intent = False
 
     def _assert_trusted(self):
         if not self._window or not self._origin:
@@ -187,8 +167,6 @@ def launch(data_dir=None, port=33821):
     window.events.restored += lambda: setattr(bridge,'maximized',False)
     webview.settings["DRAG_REGION_SELECTOR"]=".titlebar"
     def confirm_close():
-        if bridge.force_exit:
-            return True
         return window.create_confirmation_dialog("退出超级建筑师","退出会停止正在运行的任务，确定退出吗？")
     window.events.closing+=confirm_close
     def close_auxiliary_windows():

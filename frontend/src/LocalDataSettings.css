@@ -1,0 +1,5 @@
+.local-data-settings .account-divider{border-top:1px solid var(--border);margin:23px 0}
+.local-data-settings .account-prewrap{white-space:pre-wrap;overflow-wrap:anywhere}
+.local-data-settings .inline-error{margin-top:16px}
+.local-data-settings .settings-list>div{align-items:flex-start}
+.local-data-settings .export-card{margin:14px 0 18px}

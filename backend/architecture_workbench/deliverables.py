@@ -1,7 +1,7 @@
-"""Account-owned, reproducible document exports with native editable Office objects.
+"""Local, reproducible document exports with native editable Office objects.
 
 This is the deterministic export path. AI authoring continues through the
-existing local agent runtime; no remote model or new identity service is used.
+existing local agent runtime; no remote model or identity service is used.
 """
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def normalize_spec(body: dict) -> dict:
             raise ValueError("章节必须为对象")
         assets = entry.get("assets", [])
         if not isinstance(assets, list) or len(assets) > 40 or any(not isinstance(v, str) or not ASSET_REFERENCE.fullmatch(v) for v in assets):
-            raise ValueError("章节图片必须来自当前会员的资料库或已导入附件")
+            raise ValueError("章节图片必须来自当前本地资料库或已导入附件")
         layout = entry.get("layout", "split")
         if not isinstance(layout,str) or layout not in {"split", "gallery", "text"}:
             raise ValueError("章节版式无效")

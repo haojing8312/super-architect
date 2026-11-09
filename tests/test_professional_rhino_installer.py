@@ -11,11 +11,20 @@ from unittest.mock import patch
 
 
 PROJECT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("rhino_installer_guard", PROJECT / "scripts/professional-rhino-installer.py")
-INSTALLER = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(INSTALLER)
+SCRIPT = PROJECT / "scripts/professional-rhino-installer.py"
+# `scripts/` is intentionally ignored in the public source snapshot. This is an
+# operator-facing professional-host installer guard from the historical build
+# environment, not an account/cloud path and not part of the M1 local runtime.
+APPLICABLE = SCRIPT.is_file()
+if APPLICABLE:
+    SPEC = importlib.util.spec_from_file_location("rhino_installer_guard", SCRIPT)
+    INSTALLER = importlib.util.module_from_spec(SPEC)
+    SPEC.loader.exec_module(INSTALLER)
+else:
+    INSTALLER = None
 
 
+@unittest.skipUnless(APPLICABLE, "operator Rhino installer script is not part of the public checkout; not applicable to M1 local runtime")
 class RhinoReportGuardTests(unittest.TestCase):
     def setUp(self):
         own_root = (PROJECT / ".local/rhino-installer-guard-tests").resolve()

@@ -47,7 +47,7 @@ def _ordinary(path, root):
     path, root = Path(path), Path(root).resolve()
     resolved = path.resolve()
     if resolved == root or not resolved.is_relative_to(root):
-        raise ValueError("室内任务文件越出当前会员工作区")
+        raise ValueError("室内任务文件越出当前本地工作区")
     for current in (path, *path.parents):
         if current.exists() and _linked(current):
             raise ValueError("室内任务不支持符号链接或目录连接")

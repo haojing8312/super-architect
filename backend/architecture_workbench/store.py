@@ -13,7 +13,6 @@ import uuid
 import tomllib
 from datetime import datetime, timezone
 from pathlib import Path
-from urllib.parse import urlparse
 
 from .chunking import build_knowledge_chunks
 from .documents import MAX_FILE_BYTES, build_report, extract_text, file_type, local_path, query_terms, safe_name
@@ -56,7 +55,7 @@ class Store:
         self.data_dir = Path(data_dir).resolve() if data_dir else default_data_dir()
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.db_path = self.data_dir / "workbench.sqlite3"
-        for name in ("attachments", "knowledge", "resources", "reports", "workspaces/default"):
+        for name in ("attachments", "knowledge", "resources", "reports", "skills", "workspaces/default"):
             (self.data_dir / name).mkdir(parents=True, exist_ok=True)
         self._initialize()
 
@@ -107,6 +106,9 @@ class Store:
             CREATE TABLE IF NOT EXISTS reports (
               id TEXT PRIMARY KEY,title TEXT NOT NULL,path TEXT NOT NULL,asset_count INTEGER NOT NULL,
               size INTEGER NOT NULL,created_at TEXT NOT NULL);
+            CREATE TABLE IF NOT EXISTS legacy_imports (
+              fingerprint TEXT PRIMARY KEY,source TEXT NOT NULL,scope TEXT NOT NULL,
+              sessions INTEGER NOT NULL,files INTEGER NOT NULL,imported_at TEXT NOT NULL);
             """)
             columns = {row["name"] for row in db.execute("PRAGMA table_info(sessions)")}
             if "profile" not in columns:
@@ -125,13 +127,13 @@ class Store:
             defaults = {
                 "provider": "codex", "model": "", "executable": "", "theme": "light",
                 "workspace": str(self.data_dir / "workspaces" / "default"),
-                "skill_source": str(Path(__file__).resolve().parents[2] / "resources" / "skills"),
-                "admin_url": "", "mcp": {"servers": {}}, "skills": [],
+                "skill_source": str(self.data_dir / "skills"),
+                "mcp": {"servers": {}}, "skills": [],
                 "models": initial_runtime_models(),
             }
-            from .release_defaults import default_release_trust
-            defaults["release_trust"] = default_release_trust()
             db.executemany("INSERT OR IGNORE INTO settings(key,value) VALUES (?,?)", [(key, self._json(value)) for key, value in defaults.items()])
+            # Retired account/management settings must not survive a local upgrade.
+            db.execute("DELETE FROM settings WHERE key IN ('admin_url','admin_tenant_id','release_trust')")
 
     @staticmethod
     def _json(value) -> str:
@@ -236,11 +238,14 @@ class Store:
         if not isinstance(settings, dict):
             raise ValueError("设置必须为对象")
         settings = dict(settings)
+        retired = {"admin_url", "admin_tenant_id", "release_trust"} & set(settings)
+        if retired:
+            raise ValueError("账号与管理端配置已退役：" + ", ".join(sorted(retired)))
         if "workspace" in settings:
             settings["workspace"] = str(local_path(settings["workspace"], directory=True))
         if "provider" in settings and (not isinstance(settings["provider"], str) or settings["provider"] not in {"codex", "codebuddy"}):
             raise ValueError("运行时必须为 codex 或 codebuddy")
-        for key in ("model", "executable", "theme", "skill_source", "admin_url"):
+        for key in ("model", "executable", "theme", "skill_source"):
             if key in settings and not isinstance(settings[key], str):
                 raise ValueError(f"{key} 必须为字符串")
         if "theme" in settings and settings["theme"] not in {"light", "dark", "system"}:
@@ -254,10 +259,6 @@ class Store:
             settings["models"] = {**self.get_settings().get("models", {}), **settings.get("models", {}), provider: settings["model"]}
         if settings.get("skill_source"):
             settings["skill_source"] = str(local_path(settings["skill_source"], directory=True))
-        if settings.get("admin_url"):
-            address = urlparse(settings["admin_url"])
-            if address.scheme not in {"https", "http"} or not address.netloc:
-                raise ValueError("管理端地址必须为 HTTP 或 HTTPS URL")
         with self.connection() as db:
             db.executemany("INSERT INTO settings(key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", [(key, self._json(value)) for key, value in settings.items()])
         return self.get_settings()

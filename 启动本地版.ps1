@@ -28,7 +28,8 @@ if (-not $taskSourceRoot.StartsWith('E:\', [StringComparison]::OrdinalIgnoreCase
         $taskArchive = Join-Path $taskBuildRoot "source-$taskRevision.zip"
         & git -C $taskRepoRoot archive --format=zip "--output=$taskArchive" HEAD
         if ($LASTEXITCODE -ne 0) { throw '无法导出已提交源码。' }
-        Expand-Archive -LiteralPath $taskArchive -DestinationPath $taskSourceRoot
+        [Reflection.Assembly]::Load('System.IO.Compression.FileSystem') | Out-Null
+        [IO.Compression.ZipFile]::ExtractToDirectory($taskArchive, $taskSourceRoot)
     }
 }
 if (-not $PythonExecutable) {
@@ -42,7 +43,10 @@ if (-not (Test-Path -LiteralPath $taskPython)) {
     & $PythonExecutable -m venv (Join-Path $taskBuildRoot 'venv')
     if ($LASTEXITCODE -ne 0) { throw '创建 E 盘虚拟环境失败。' }
 }
-$taskRequirements = (Get-FileHash -LiteralPath (Join-Path $taskSourceRoot 'pyproject.toml') -Algorithm SHA256).Hash
+$taskHasher = [Security.Cryptography.SHA256]::Create()
+$taskStream = [IO.File]::OpenRead((Join-Path $taskSourceRoot 'pyproject.toml'))
+try { $taskRequirements = [BitConverter]::ToString($taskHasher.ComputeHash($taskStream)).Replace('-', '') }
+finally { $taskStream.Dispose(); $taskHasher.Dispose() }
 $taskMarker = Join-Path $taskBuildRoot 'dependencies.sha256'
 if (-not (Test-Path -LiteralPath $taskMarker) -or (Get-Content -LiteralPath $taskMarker -Raw).Trim() -ne $taskRequirements) {
     & $taskPython -m pip install -e "${taskSourceRoot}[desktop]"

@@ -1,0 +1,64 @@
+.canvas-workbench{position:relative;min-width:0;overflow:hidden}
+.canvas-workbench .canvas-projectbar{min-height:44px;display:flex;align-items:center;gap:8px;padding:7px 14px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap}
+.canvas-workbench .canvas-projectbar>button{display:inline-flex;align-items:center;gap:5px;padding:6px 8px;font-size:11px;white-space:nowrap;border-radius:4px}
+.canvas-workbench .canvas-projectbar>button:hover:not(:disabled){background:var(--hover)}
+.canvas-workbench .canvas-projectname{display:flex;align-items:center;gap:7px;max-width:210px;color:var(--muted)}
+.canvas-workbench .canvas-projectname input{width:165px;min-width:70px;padding:5px 6px;border:1px solid transparent;border-radius:4px;background:transparent;color:var(--text);font-size:12px;font-weight:500}
+.canvas-workbench .canvas-projectname input:hover,.canvas-workbench .canvas-projectname input:focus{border-color:var(--border);background:var(--bg)}
+.canvas-workbench .canvas-save-state{font-size:10px;color:var(--muted);white-space:nowrap}
+.canvas-workbench .canvas-toolbar{height:auto;min-height:43px;padding:5px 13px;flex-shrink:0;flex-wrap:wrap;gap:4px}
+.canvas-workbench .canvas-toolbar>button{width:auto;min-width:30px;display:inline-flex;gap:5px;padding:5px 6px;font-size:10px;white-space:nowrap}
+.canvas-workbench .canvas-toolbar select,.canvas-workbench .canvas-formatbar select{font-size:11px;padding:5px 7px;min-width:70px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text)}
+.canvas-workbench .canvas-formatbar{display:flex;align-items:center;gap:8px;min-height:39px;padding:5px 15px;border-bottom:1px solid var(--border);background:var(--surface);color:var(--muted);font-size:10px;flex-shrink:0;flex-wrap:wrap}
+.canvas-workbench .canvas-formatbar label{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.canvas-workbench .canvas-formatbar input{width:52px;padding:4px 5px;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-size:11px}
+.canvas-workbench .canvas-formatbar>button{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:6px 7px;border-radius:4px}
+.canvas-workbench .canvas-formatbar>button.selected{background:#e2e8ed;color:#536c83}
+.canvas-workbench .canvas-formatbar>button:hover:not(:disabled){background:var(--hover)}
+.canvas-workbench .separator{height:21px;border-left:1px solid var(--border);margin:0 4px}
+.canvas-workbench .canvas-surface{outline:none;min-height:140px}
+.canvas-workbench .canvas-surface:focus-visible{box-shadow:inset 0 0 0 2px #7794ac66}
+.canvas-workbench .canvas-selection-panel{position:absolute;right:16px;top:16px;background:var(--surface);border:1px solid var(--border);box-shadow:0 3px 12px #0001;border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;max-width:238px;color:var(--muted);font-size:11px;max-height:calc(100% - 32px);overflow:auto}
+.canvas-workbench .canvas-selection-panel>strong{font-size:11px;font-weight:500;color:var(--text)}
+.canvas-workbench .canvas-selection-panel>div{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px}
+.canvas-workbench .canvas-selection-panel label{display:flex;align-items:center;gap:7px}
+.canvas-workbench .canvas-selection-panel input{width:65px;padding:5px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font-size:11px}
+.canvas-workbench .canvas-selection-panel>label{flex-direction:column;align-items:stretch;gap:7px}
+.canvas-workbench .canvas-selection-panel textarea{width:100%;min-height:78px;resize:vertical;padding:7px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);font-size:12px;line-height:1.5}
+.canvas-workbench .canvas-selection-panel>button{font-size:10px;padding:5px 7px;align-self:flex-end;color:var(--muted)}
+.canvas-workbench .canvas-item-selection{stroke-dasharray:3 3}
+.canvas-workbench .canvas-group-title{cursor:move;user-select:none}
+.canvas-workbench .canvas-selection-panel>div.canvas-group-fields{display:flex;flex-direction:column;gap:9px;border-top:1px solid var(--border);padding-top:10px}
+.canvas-workbench .canvas-group-fields label{flex-direction:column;align-items:stretch;gap:6px}
+.canvas-workbench .canvas-group-fields input{width:100%}
+.canvas-workbench .canvas-collaboration{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);font-size:10px}
+.canvas-workbench .canvas-collaboration-heading{display:flex;align-items:center;gap:12px;padding:5px 15px;min-height:31px;color:var(--muted)}
+.canvas-workbench .canvas-collaboration-heading>button{font-size:10px;padding:3px 5px;gap:5px;white-space:nowrap}
+.canvas-workbench .canvas-collaboration-limit{margin-left:auto;font-size:9px}
+.canvas-workbench .canvas-collaboration-content{padding:10px 15px 12px;max-height:210px;overflow:auto;border-top:1px solid var(--border)}
+.canvas-workbench .canvas-collaboration-controls,.canvas-workbench .canvas-collaboration-join,.canvas-workbench .canvas-collaboration-recovery{display:flex;align-items:flex-end;gap:9px;flex-wrap:wrap}
+.canvas-workbench .canvas-collaboration-content label{display:flex;flex-direction:column;gap:5px;color:var(--muted)}
+.canvas-workbench .canvas-collaboration-content input,.canvas-workbench .canvas-collaboration-content select{font-size:11px;color:var(--text);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:5px 7px;max-width:310px;min-width:90px}
+.canvas-workbench .canvas-collaboration-join{margin-top:10px}
+.canvas-workbench .canvas-collaboration-content button{font-size:10px;padding:6px 8px;border:1px solid var(--border);border-radius:4px;gap:5px}
+.canvas-workbench .canvas-collaboration-content button:hover:not(:disabled){background:var(--hover)}
+.canvas-workbench .canvas-collaboration-content p{font-size:9px;color:var(--muted);margin:9px 0}
+.canvas-workbench .canvas-collaboration-error{padding:7px 9px;border:1px solid #c79370;background:#b17b3612;border-radius:4px;color:var(--text);display:flex;align-items:center;gap:8px;font-size:10px;line-height:1.5;margin-top:8px}
+.canvas-workbench .canvas-collaboration-error button{margin-left:auto;white-space:nowrap}
+.canvas-workbench .canvas-collaboration-recovery{margin-top:9px}
+.canvas-workbench .canvas-loading{position:absolute;inset:0;background:var(--bg);display:grid;place-items:center;color:var(--muted);font-size:12px}
+.canvas-workbench .canvas-status{height:32px;min-height:32px;font-size:10px}
+.canvas-workbench .canvas-project-mask{position:absolute;inset:0;z-index:10;display:grid;place-items:center;background:#141a244d;padding:24px}
+.canvas-workbench .canvas-project-dialog{width:min(520px,100%);max-height:80%;overflow:auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 50px #0002;padding:20px}
+.canvas-workbench .canvas-project-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.canvas-workbench .canvas-project-dialog h2{font-size:16px;font-weight:500;margin:0}
+.canvas-workbench .canvas-project-dialog p{font-size:11px;color:var(--muted);line-height:1.6;margin:13px 0}
+.canvas-workbench .canvas-project-items{display:flex;flex-direction:column;gap:5px}
+.canvas-workbench .canvas-project-items>button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 9px;border:1px solid var(--border);border-radius:5px}
+.canvas-workbench .canvas-project-items>button:hover{background:var(--hover)}
+.canvas-workbench .canvas-project-items span{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}
+.canvas-workbench .canvas-project-items strong{font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.canvas-workbench .canvas-project-items small,.canvas-workbench .canvas-project-items em{font-size:10px;color:var(--muted);font-style:normal}
+.canvas-workbench button:disabled{opacity:.4;cursor:default}
+:root[data-theme=dark] .canvas-workbench .canvas-formatbar>button.selected{background:#333e48;color:#bacbdc}
+@media(max-width:1050px){.canvas-workbench .canvas-formatbar>.titlebar-space,.canvas-workbench .canvas-projectbar>.titlebar-space{display:none}.canvas-workbench .canvas-save-state{margin-right:auto}.canvas-workbench .canvas-projectname{max-width:160px}.canvas-workbench .canvas-projectname input{width:135px}}

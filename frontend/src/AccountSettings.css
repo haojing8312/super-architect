@@ -1,0 +1,14 @@
+.account-settings .account-local-mode{padding:10px 12px;margin:12px 0 18px;border:1px solid var(--border);border-radius:5px;background:var(--bg);font-size:11px;line-height:1.6;color:var(--muted)}
+.account-settings .account-tenant input{max-width:155px}
+.account-settings .account-tenant small{font-size:10px;color:var(--muted);margin-top:5px}
+.account-settings .account-divider{border-top:1px solid var(--border);margin:23px 0}
+.account-settings .account-profile>strong{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500}
+.account-settings .account-profile dl{display:grid;grid-template-columns:90px 1fr;gap:8px 14px;font-size:11px;line-height:1.6;margin:17px 0}
+.account-settings .account-profile dt{color:var(--muted)}
+.account-settings .account-profile dd{margin:0;overflow-wrap:anywhere}
+.account-settings .account-login{max-width:420px}
+.account-settings .account-version-heading{display:flex;align-items:center;gap:12px;justify-content:space-between;margin:12px 0}
+.account-settings .account-version-heading h4{font-size:13px;font-weight:500;margin:0}
+.account-settings .account-prewrap{white-space:pre-wrap}
+.account-settings .account-installer{margin-top:15px}
+.account-settings .inline-error{margin-top:16px}

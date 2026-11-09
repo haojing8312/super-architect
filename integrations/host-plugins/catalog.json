@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-10-04",
+  "scope": "local preparation only; no commercial host activation",
+  "packages": [
+    {
+      "id": "rhino",
+      "host": "Rhino 8.17+",
+      "repo": "jingcheng-chen/rhinomcp",
+      "tag": "releases/0.2.2",
+      "commit": "97386e2",
+      "license": "Apache-2.0",
+      "protocol": "tcp-json-type-params",
+      "port": 1999,
+      "filename": "rhinomcp-0.2.2.yak",
+      "url": "https://github.com/jingcheng-chen/rhinomcp/releases/download/releases/0.2.2/rhinomcp-0.2.2-rh8_17-any.yak",
+      "sha256": "0ca1ad9091c3d85a101e030206260f629a148d29094625404d10c883379c42f6",
+      "source_filename": "rhinomcp-0.2.2-source.zip",
+      "source_url": "https://api.github.com/repos/jingcheng-chen/rhinomcp/zipball/releases/0.2.2",
+      "source_sha256": "17c27de2482f1ba312fd93e5fdabc95d781187bd331987a6e8bd2e7821f16f8b",
+      "license_member": "jingcheng-chen-rhinomcp-97386e2/LICENSE",
+      "status": "downloaded-source-compatible-host-unavailable"
+    },
+    {
+      "id": "grasshopper",
+      "host": "Rhino 8.21+ with Grasshopper",
+      "repo": "brookstalley/cordyceps",
+      "tag": "v1.5.0",
+      "commit": "2aae348",
+      "license": "MIT",
+      "protocol": "mcp-streamable-http",
+      "port": 26929,
+      "filename": "Cordyceps-v1.5.0.gha",
+      "url": "https://github.com/brookstalley/cordyceps/releases/download/v1.5.0/Cordyceps.gha",
+      "sha256": "a9788a643155e5a86687a735f3f1aa2e73e7392706060a853f6c57bf43362ce7",
+      "source_filename": "cordyceps-v1.5.0-source.zip",
+      "source_url": "https://api.github.com/repos/brookstalley/cordyceps/zipball/v1.5.0",
+      "source_sha256": "39a57285a5ab873bb3a714e30581eba68b868464f9c3575acd4c190de38eb1c6",
+      "license_member": "brookstalley-cordyceps-2aae348/LICENSE",
+      "status": "downloaded-source-compatible-host-unavailable"
+    },
+    {
+      "id": "revit-2026",
+      "host": "Autodesk Revit 2026 desktop",
+      "repo": "LuDattilo/revit-mcp-server",
+      "tag": "v2.2.1",
+      "commit": "2c33b84",
+      "license": "MIT",
+      "protocol": "tcp-json-rpc-newline-paired-node",
+      "port_range": [
+        8080,
+        8089
+      ],
+      "filename": "revit-mcp-v2.2.1-Revit2026.zip",
+      "url": "https://github.com/LuDattilo/revit-mcp-server/releases/download/v2.2.1/mcp-servers-for-revit-v2.2.1-Revit2026.zip",
+      "sha256": "2c46ad557b69ac3b36fade076b16e36d7bbb7b1108a2d273eed60a5f2426749b",
+      "source_filename": "revit-mcp-v2.2.1-source.zip",
+      "source_url": "https://api.github.com/repos/LuDattilo/revit-mcp-server/zipball/v2.2.1",
+      "source_sha256": "1e7322444c0149b68c4c5290cd2cfcb7f110261df8058ce93cd9771329304f96",
+      "license_member": "LuDattilo-revit-mcp-server-2c33b84/LICENSE",
+      "status": "downloaded-139-tools-matched-needs-paired-node-host-unavailable"
+    },
+    {
+      "id": "sketchup",
+      "host": "SketchUp Pro 2026 desktop",
+      "repo": "Shattenjagger/sketchup-mcp-bridge",
+      "tag": "latest",
+      "commit": "c7ee20c",
+      "license": "MIT",
+      "protocol": "tcp-json-cmd-id-args-adapted-to-eight-mcp-tools",
+      "port": 9876,
+      "filename": "su-mcp-bridge.rbz",
+      "url": "https://github.com/Shattenjagger/sketchup-mcp-bridge/releases/download/latest/su_mcp_bridge.rbz",
+      "sha256": "f62dd10a3b28efd62b5d80405be5262acc20a65122172e9d6191e2e29fe133a4",
+      "source_filename": "su-mcp-bridge-source.zip",
+      "source_url": "https://api.github.com/repos/Shattenjagger/sketchup-mcp-bridge/zipball/latest",
+      "source_sha256": "e8a8b01a9ecc3e77b680f768cb3e6468a2d70616f039c43aee92c8e9050e06d3",
+      "license_member": "Shattenjagger-sketchup-mcp-bridge-c7ee20c/LICENSE",
+      "status": "downloaded-adapter-required-host-unavailable"
+    }
+  ]
+}

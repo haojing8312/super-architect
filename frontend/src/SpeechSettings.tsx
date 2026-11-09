@@ -1,0 +1,8 @@
+import { useEffect, useState } from 'react';
+import { api, Row } from './api';
+import { Mic, Volume2, RefreshCw } from 'lucide-react';
+export default function SpeechSettings({draft,setDraft}:{draft:Row,setDraft:(r:Row)=>void}){
+ const [status,setStatus]=useState<Row|null>(null),[command,setCommand]=useState(JSON.stringify(draft.asr_command||[]));
+ useEffect(()=>{api('/speech/status').then(setStatus).catch(()=>{})},[]);
+ return <><h3>本机语音</h3><p className="muted">麦克风录音在本地识别。使用已经安装的 Whisper 或本地识别命令。</p><div className="settings-list"><div><Mic size={18}/><div><strong>语音输入</strong><p>{status?.asr.ready?'本机识别引擎已连接':status?.asr.error||'检测中…'}</p></div></div><div><Volume2 size={18}/><div><strong>中文朗读</strong><p>{status?.tts.ready?status.tts.chinese_voices.map((v:Row)=>v.name).join('、'):status?.tts.error||'检测中…'}</p></div></div></div><label className="field" style={{marginTop:20}}><span>Whisper Python 路径</span><input value={draft.asr_python||''} onChange={e=>setDraft({...draft,asr_python:e.target.value})} placeholder="已安装 Whisper 的 Python.exe"/></label><label className="field"><span>本地 Whisper 模型路径</span><input value={draft.asr_model||''} onChange={e=>setDraft({...draft,asr_model:e.target.value})} placeholder="已有的模型 .pt 文件"/></label><label className="field"><span>或使用本地识别命令（JSON 数组，包含 {'{input}'}）</span><textarea className="code-editor" style={{height:95}} value={command} onChange={e=>{setCommand(e.target.value);try{setDraft({...draft,asr_command:JSON.parse(e.target.value)})}catch{}}} placeholder={'["C:/工具/asr.exe", "--audio", "{input}"]'}/></label><button className="secondary-button" onClick={async()=>{await api('/settings',draft,'PUT');setStatus(await api('/speech/status'))}}><RefreshCw size={14}/>保存并检测</button></>
+}

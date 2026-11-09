@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "rhino": { "command": "{PythonExe}", "args": ["{ProjectDir}/resources/skills/RhinoMCP/rhinomcp_launcher.py"], "env": { "RHINO_MCP_HOST": "127.0.0.1", "RHINO_MCP_PORT": "1999" }, "enabled": true },
+    "GrasshopperMCP": { "url": "http://127.0.0.1:26929/mcp", "transport": "streamable_http", "enabled": true },
+    "revit": { "command": "{NodeExe}", "args": ["{PluginCache}/prepared/revit-2026/revit_mcp_plugin/Commands/RevitMCPCommandSet/server/build/index.js"], "enabled": true },
+    "sketchup": { "command": "{PythonExe}", "args": ["{ProjectDir}/integrations/host-plugins/sketchup_adapter.py"], "env": { "SU_MCP_HOST": "127.0.0.1", "SU_MCP_PORT": "9876", "SU_MCP_RUBY_TIMEOUT": "180" }, "enabled": true }
+  }
+}
